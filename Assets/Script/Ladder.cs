@@ -5,6 +5,7 @@ using UnityEngine;
 public class Ladder : MonoBehaviour
 {
     [SerializeField] protected float speed;
+    public bool onLadder;
     // Start is called before the first frame update
     void Start()
     {
@@ -30,5 +31,6 @@ public class Ladder : MonoBehaviour
         { 
             other.GetComponent<Rigidbody2D>().velocity = new Vector2(0, 1);
         }
+        onLadder = true;
     }
 }

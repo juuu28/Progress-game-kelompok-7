@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class Mono2D : MonoBehaviour
 {
-
+    
     [SerializeField] public float moveSpeed;
     [SerializeField] public float jumpForce;
     [SerializeField] public bool isGrounded = false;
@@ -24,27 +24,52 @@ public class Mono2D : MonoBehaviour
     protected float lockPos = 0;
     protected InputSystem control;
     protected float inputAxis;
+    [SerializeField] protected Animator animator;
+    AudioSource audioSrc;
+    [SerializeField] protected bool isMoving;
+    public bool onLadder;
 
 
     public void Init()
     {
         rb = GetComponent<Rigidbody2D>();
+        animator = GetComponent<Animator>();
     }
     public void Move(float _direction)
     {
+        //animator.SetBool("run", true);
+        if (_direction != 0)
+        {
+            animator.SetBool("walk", true);
+            
+        }
+        else
+        {
+            animator.SetBool("walk", false);
+            
+        }
+        /*if (_direction != 0)
+        {
+            audioSrc.Play();
+        }
+        else
+        { 
+            audioSrc.Stop();
+        }*/
         direction.x = _direction;
         transform.Translate(direction * moveSpeed * Time.deltaTime);
+        //animator.SetFloat("Speed", Mathf.Abs(inputAxis));
         ChangeFlip();
     }
     public void ChangeFlip()
     {
         if (direction.x > 0)
         {
-            transform.localScale = new Vector3(-3, 3, 1);
+            transform.localScale = new Vector3(1.25f, 1.25f, 1);
         }
         if (direction.x < 0)
         {
-            transform.localScale = new Vector3(3, 3, 1);
+            transform.localScale = new Vector3(-1.25f, 1.25f, 1);
         }
     }
     private void Awake()
@@ -66,12 +91,13 @@ public class Mono2D : MonoBehaviour
     void Start()
     {
         Init();
+        audioSrc = GetComponent<AudioSource>();
+        
     }
 
     // Update is called once per frame
     void Update()
     {
-        Jump();
         transform.rotation = Quaternion.Euler(0, 0, 0);
         //Vector3 movement = new Vector3(Input.GetAxis("Horizontal"), 0f, 0f);
         //transform.position += movement * Time.deltaTime * moveSpeed;
@@ -79,10 +105,12 @@ public class Mono2D : MonoBehaviour
 
         //InputGetAxisMovement();
         Move(inputAxis);
+        Jump();
         //InputGetKeyJump();
         //InputGetAxisJump();
         //Climb();
-        
+
+
     }
     public void InputGetKeyMovement()
     {
@@ -116,33 +144,41 @@ public class Mono2D : MonoBehaviour
 
     public void Jump()
     {
+        
         if (Input.GetButtonDown("Jump") && isGrounded == true)
         {
+            if (isGrounded == false && onLadder ==false)
+            {
+                animator.SetBool("jump", true );
+            }
+            else if(isGrounded == false && onLadder == true)
+            {
+                animator.SetBool("jump", false);
+            }
             gameObject.GetComponent<Rigidbody2D>().AddForce(new Vector2(0f, jumpForce), ForceMode2D.Impulse);
-            
         }
     }
-    /*public void Climb()
+    private void OnTriggerEnter2D(Collider2D collision)
     {
-        RaycastHit2D hitinfo = Physics2D.Raycast(transform.position, Vector2.up, distance, whatIsLadder);
-        if (hitinfo.collider != null)
+        if (collision.CompareTag("Ladder") /*&& Input.GetKey(KeyCode.W)*/)
         {
-            if (Input.GetKeyDown(KeyCode.UpArrow))
-            {
-                isClimbing = true;
-            }
-        } else
-        {
-            isClimbing = false;
+            animator.SetBool("climb", true);
         }
-        if (isClimbing == true)
+        else if (collision.CompareTag("Ladder") /*&& Input.GetKey(KeyCode.S)*/)
         {
-            inputVertical = Input.GetAxisRaw("Vertical");
-            rb.velocity = new Vector2(rb.position.x, inputVertical * moveSpeed);
-            rb.gravityScale = 0;
-        } else
+            animator.SetBool("climb", true);
+        }
+        else
         {
-            rb.gravityScale = 5;
+            animator.SetBool("climb", false);
+        }
+
+    }
+    /*public void dead()
+    {
+        if (HealthBar.health == 0)
+        {
+
         }
     }*/
 }
